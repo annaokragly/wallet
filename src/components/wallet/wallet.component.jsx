@@ -35,9 +35,9 @@ const Wallet = ({ addTransaction }) => {
         let money = 0;
         data.forEach(item => {
             if (item.action === 'Added') {
-                money = money + parseInt(item.amount);
+                money = money + parseFloat(item.amount);
             } else {
-                money = money - parseInt(item.amount);
+                money = money - parseFloat(item.amount);
             }
         });
         return money;
@@ -57,14 +57,23 @@ const Wallet = ({ addTransaction }) => {
         setTransaction({ name: '', amount: '', action: '' });
     };
 
-    const handleAdd = async event => {
-        const addSum = parseInt(amount);
+    const addOrWithdrawSum = parseFloat(amount, 10).toFixed(2);
+    const blockEmptyInput = name.trim() && amount.trim();
+    const cutZeroFromHistory = () => {
+        let newAmount = addOrWithdrawSum.toString();
+        while (newAmount.charAt(0) === '0') { 
+            newAmount = newAmount.substr(1);
+        };
+        transaction.amount = newAmount;
+    };
 
-        if (addSum <= 0) {
+    const handleAdd = async event => {
+        if (addOrWithdrawSum <= 0) {
             alert("Don't use negative numbers");
-        } else {
+        } else if (blockEmptyInput) {
+            cutZeroFromHistory();
             transaction.action = "Added";
-            setBalance({ money: money + addSum });
+            setBalance({ money: money + addOrWithdrawSum });
 
             createTransactionDocument(transaction, { name });
             clearForm();
@@ -72,20 +81,17 @@ const Wallet = ({ addTransaction }) => {
     };
 
     const handleWithdrawal = async event => {
-        const withdrawSum = parseInt(amount);
-
-        if (withdrawSum <= 0) {
+        if (addOrWithdrawSum <= 0) {
             alert("Don't use negative numbers");
-        } else if (basicBalance() > withdrawSum) {
+        } else if (basicBalance() > addOrWithdrawSum && blockEmptyInput) {
+            cutZeroFromHistory();
             transaction.action = "Withdrawal";
-            setBalance({ money: money - withdrawSum });
-            setTransaction({ action: "Withdrawed" });
+            setBalance({ money: money - addOrWithdrawSum });
 
             createTransactionDocument(transaction, { name });
-            addTransaction(transaction);
             clearForm();
         } else {
-            alert("You don't have enough money to withdraw " + withdrawSum + "zł :( Go earn some money first!!!");
+            alert("You either didn't name your transaction or you don't have enough money to withdraw " + addOrWithdrawSum + "zł :( Fix the name or go earn some money first!!!");
         }
     };
 
@@ -93,7 +99,7 @@ const Wallet = ({ addTransaction }) => {
         <WalletMainContainer>
             <WalletContainer>
                 <WalletTitle>Balance:</WalletTitle>
-                <WalletBalance> {basicBalance() + parseInt(money)} zł</WalletBalance>
+                <WalletBalance> {(parseFloat(basicBalance()) + parseFloat(money)).toFixed(2)} zł</WalletBalance>
 
                 <form onSubmit={handleSubmit}>
                     <Form

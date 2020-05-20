@@ -7,11 +7,11 @@ import {
 } from './history-item.styles';
 
 
-const HistoryItem = ({ transactionItem }) => {    
+const HistoryItem = ({ transactionItem }) => {
     return (
         <HistoryItemContainer>
             <TextContainer>{transactionItem.createdAt.toDate().toString()}</TextContainer>
-            <TextContainer>{transactionItem.name}</TextContainer>
+            <TextContainer>{transactionItem.name.replace(/(.{20})/g,'$1\n')}</TextContainer>
             <TextContainer>{transactionItem.action}</TextContainer>
             <TextContainer>{transactionItem.amount}zł</TextContainer>
         </HistoryItemContainer>
